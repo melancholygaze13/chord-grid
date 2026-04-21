@@ -2,7 +2,30 @@
 
 A small browser tool for **drawing guitar chord diagrams** and **laying them out on a printable sheet**. You set a sheet title, configure tuning and starting fret, click the fretboard to place notes (with support for open strings and mutes), add each chord to the sheet, preview the full layout, and **download a PNG** of either the multi-chord sheet or the single editor diagram when the sheet is empty.
 
-The UI is a static site: no build step and no framework-just modules and the Canvas API.
+The UI is a static site: no build step and no framework, just ES modules and the Canvas API.
+
+## Live Demo
+
+[Open ChordGrid](https://melancholygaze13.github.io/chord-grid/)
+
+## Features
+
+- Interactive guitar chord diagram editor
+- Custom chord names, sheet titles, tuning, and starting fret
+- Open string and muted string support
+- Optional fret number labels
+- Multi-chord printable sheet preview
+- PNG export for a single diagram or full chord sheet
+
+## Usage
+
+1. Enter a sheet title.
+2. Add a chord name.
+3. Click the fretboard to place fretted notes.
+4. Use Shift-click for open strings.
+5. Use Alt-click or right-click for muted strings.
+6. Click **Add to sheet** to collect chords.
+7. Open **Preview** and download the PNG.
 
 ## Languages
 
