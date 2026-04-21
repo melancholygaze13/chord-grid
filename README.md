@@ -14,10 +14,10 @@ The UI is a static site: no build step and no framework-just modules and the Can
 
 ## Tech stack
 
-- **Canvas 2D API** — chord diagrams, grid, labels, and sheet composite rendering
+- **Canvas 2D API** - chord diagrams, grid, labels, and sheet composite rendering
 - **ES modules** (`import` / `export`) - code split across `js/` files (requires serving over `http://`, not `file://`)
-- **Google Fonts** — [Outfit](https://fonts.google.com/specimen/Outfit) (UI) and [JetBrains Mono](https://fonts.google.com/specimen/JetBrains+Mono) (diagram text)
-- **npm + [serve](https://github.com/vercel/serve)** — local static file server for development (optional but convenient)
+- **Google Fonts** - [Outfit](https://fonts.google.com/specimen/Outfit) (UI) and [JetBrains Mono](https://fonts.google.com/specimen/JetBrains+Mono) (diagram text)
+- **npm + [serve](https://github.com/vercel/serve)** - local static file server for development (optional but convenient)
 
 ## Run locally
 
