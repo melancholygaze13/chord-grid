@@ -2,7 +2,7 @@
 
 A small browser tool for **drawing guitar chord diagrams** and **laying them out on a printable sheet**. You set a sheet title, configure tuning and starting fret, click the fretboard to place notes (with support for open strings and mutes), add each chord to the sheet, preview the full layout, and **download a PNG** of either the multi-chord sheet or the single editor diagram when the sheet is empty.
 
-The UI is a static site: no build step and no framework—just modules and the Canvas API.
+The UI is a static site: no build step and no framework-just modules and the Canvas API.
 
 ## Languages
 
@@ -14,10 +14,10 @@ The UI is a static site: no build step and no framework—just modules and the C
 
 ## Tech stack
 
-- **Canvas 2D API** - chord diagrams, grid, labels, and sheet composite rendering
+- **Canvas 2D API** — chord diagrams, grid, labels, and sheet composite rendering
 - **ES modules** (`import` / `export`) - code split across `js/` files (requires serving over `http://`, not `file://`)
-- **Google Fonts** - [Outfit](https://fonts.google.com/specimen/Outfit) (UI) and [JetBrains Mono](https://fonts.google.com/specimen/JetBrains+Mono) (diagram text)
-- **npm + [serve](https://github.com/vercel/serve)** - local static file server for development (optional but convenient)
+- **Google Fonts** — [Outfit](https://fonts.google.com/specimen/Outfit) (UI) and [JetBrains Mono](https://fonts.google.com/specimen/JetBrains+Mono) (diagram text)
+- **npm + [serve](https://github.com/vercel/serve)** — local static file server for development (optional but convenient)
 
 ## Run locally
 

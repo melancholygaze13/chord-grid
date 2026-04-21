@@ -1,0 +1,13 @@
+{
+  "name": "chord-grid",
+  "version": "1.0.0",
+  "private": true,
+  "description": "ChordGrid — guitar chord diagrams & printable sheets (static site; ES modules need HTTP)",
+  "scripts": {
+    "start": "serve . -l 8080",
+    "dev": "serve . -l 8080"
+  },
+  "devDependencies": {
+    "serve": "^14.2.4"
+  }
+}
