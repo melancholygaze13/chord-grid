@@ -1,4 +1,4 @@
-import { DEFAULT_TUNING, FONT_UI, THEME } from './constants.js';
+import { DEFAULT_TUNING, FONT_UI, LIGHT_THEME } from './constants.js';
 import { computeChordLayout, round2 } from './geometry.js';
 
 /**
@@ -10,7 +10,7 @@ import { computeChordLayout, round2 } from './geometry.js';
  */
 
 export function drawChordDiagram(c, positions, w, h, scale = 1, opts) {
-  const t = THEME;
+  const t = opts.theme || LIGHT_THEME;
   const showNums = !!opts.showFretNumbers;
   const tuning =
     opts.tuning && opts.tuning.length === 6 ? opts.tuning : [...DEFAULT_TUNING];
@@ -26,7 +26,6 @@ export function drawChordDiagram(c, positions, w, h, scale = 1, opts) {
   const {
     padL,
     innerW,
-    innerH,
     stringXs,
     fretGap,
     boardTop,
@@ -50,9 +49,6 @@ export function drawChordDiagram(c, positions, w, h, scale = 1, opts) {
     c.fillStyle = t.paper;
     c.fillRect(0, 0, w, h);
   }
-
-  c.fillStyle = t.nut;
-  c.fillRect(padL - 0.5 * scale, boardTop - nutH, innerW + 1 * scale, nutH);
 
   c.strokeStyle = t.fretWire;
   c.lineWidth = 1.35 * scale;
@@ -109,6 +105,9 @@ export function drawChordDiagram(c, positions, w, h, scale = 1, opts) {
     c.lineTo(x, boardBottom);
     c.stroke();
   }
+
+  c.fillStyle = t.nut;
+  c.fillRect(padL - 0.5 * scale, boardTop - nutH, innerW + 1 * scale, nutH);
 
   const stringGap = innerW / 5;
   const openRingR = Math.min(7.4 * scale, fretGap * 0.29, stringGap * 0.31);

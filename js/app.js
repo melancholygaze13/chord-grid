@@ -1,4 +1,4 @@
-import { DEFAULT_TUNING, L } from './constants.js';
+import { DARK_THEME, DEFAULT_TUNING, L, LIGHT_THEME } from './constants.js';
 import { applyCanvasDpr } from './canvas-utils.js';
 import { drawCheatSheetComposite } from './cheat-sheet.js';
 import { drawChordDiagram } from './diagram.js';
@@ -15,6 +15,7 @@ let positions = [0, 0, 0, 0, 0, 0];
 /** @type {{ id: number; name: string; positions: number[]; startFret: number }[]} */
 let cheatItems = [];
 let nextCheatId = 1;
+const THEME_STORAGE_KEY = 'chord-grid-theme';
 
 const tuningInput = document.getElementById('tuning');
 const startFretSelect = document.getElementById('startFret');
@@ -23,6 +24,50 @@ const canvas = document.getElementById('c');
 const sheetCanvas = document.getElementById('sheetCanvas');
 const sheetTitleInput = document.getElementById('sheetTitle');
 const chordTitleInput = document.getElementById('chordTitle');
+const sheetLibrary = document.getElementById('sheetLibrary');
+const sheetLibraryList = document.getElementById('sheetLibraryList');
+const sheetLibraryTitle = document.getElementById('sheetLibraryTitle');
+const themeToggleBtn = document.getElementById('themeToggle');
+const systemThemeQuery = window.matchMedia('(prefers-color-scheme: dark)');
+
+let selectedTheme = loadPreferredTheme();
+
+function loadPreferredTheme() {
+  const saved = window.localStorage.getItem(THEME_STORAGE_KEY);
+  if (saved === 'light' || saved === 'dark') return saved;
+  return systemThemeQuery.matches ? 'dark' : 'light';
+}
+
+function currentDiagramTheme() {
+  return selectedTheme === 'dark' ? DARK_THEME : LIGHT_THEME;
+}
+
+function applyTheme(theme, { persist = true } = {}) {
+  selectedTheme = theme === 'dark' ? 'dark' : 'light';
+  document.documentElement.dataset.theme = selectedTheme;
+  updateThemeToggleLabel();
+  if (persist) {
+    window.localStorage.setItem(THEME_STORAGE_KEY, selectedTheme);
+  }
+}
+
+function updateThemeToggleLabel() {
+  if (!themeToggleBtn) return;
+  const darkActive = selectedTheme === 'dark';
+  themeToggleBtn.setAttribute('aria-pressed', String(darkActive));
+  themeToggleBtn.setAttribute(
+    'aria-label',
+    darkActive ? 'Switch to light theme' : 'Switch to dark theme'
+  );
+  const icon = themeToggleBtn.querySelector('.theme-toggle__icon');
+  if (icon) {
+    icon.textContent = darkActive ? '☀' : '☾';
+  }
+  const label = themeToggleBtn.querySelector('.theme-toggle__label');
+  if (label) {
+    label.textContent = darkActive ? 'Light mode' : 'Dark mode';
+  }
+}
 
 function getTuning() {
   return normalizedTuningOrDefault(tuningInput.value);
@@ -44,6 +89,7 @@ function diagramOptionsForEditor() {
     showFretNumbers: fretNumbersVisible(),
     startFret: getStartFret(),
     transparentDiagramBackground: true,
+    theme: currentDiagramTheme(),
   };
 }
 
@@ -57,15 +103,56 @@ function populateStartFretSelect() {
   startFretSelect.value = '1';
 }
 
+function renderSheetLibrary() {
+  if (!sheetLibrary || !sheetLibraryList || !sheetLibraryTitle) return;
+
+  const count = cheatItems.length;
+  sheetLibraryTitle.textContent = count === 1 ? '1 chord in sheet' : `${count} chords in sheet`;
+  sheetLibrary.style.display = count > 0 ? 'block' : 'none';
+  sheetLibraryList.textContent = '';
+
+  cheatItems.forEach((item) => {
+    const row = document.createElement('div');
+    row.className = 'sheet-library__item';
+
+    const meta = document.createElement('div');
+    meta.className = 'sheet-library__meta';
+
+    const name = document.createElement('span');
+    name.className = 'sheet-library__name';
+    name.textContent = item.name || 'Untitled chord';
+
+    const detail = document.createElement('span');
+    detail.className = 'sheet-library__detail';
+    detail.textContent = `Start fret ${item.startFret}`;
+
+    const removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.className = 'sheet-library__remove secondary';
+    removeBtn.textContent = '×';
+    removeBtn.setAttribute('aria-label', `Remove ${item.name || 'chord'} from sheet`);
+    removeBtn.addEventListener('click', () => {
+      removeChordFromSheet(item.id);
+    });
+
+    meta.append(name, detail);
+    row.append(meta, removeBtn);
+    sheetLibraryList.appendChild(row);
+  });
+}
+
 function renderSheetPreview() {
-  const hint = document.getElementById('sheetEmptyHint');
+  const emptyState = document.getElementById('sheetEmptyState');
+  const sheetScroll = document.getElementById('sheetScroll');
+  renderSheetLibrary();
   const n = cheatItems.length;
   if (n === 0) {
-    sheetCanvas.style.display = 'none';
-    hint.style.display = 'block';
+    if (sheetScroll) sheetScroll.style.display = 'none';
+    if (emptyState) emptyState.style.display = 'grid';
     return;
   }
-  hint.style.display = 'none';
+  if (emptyState) emptyState.style.display = 'none';
+  if (sheetScroll) sheetScroll.style.display = 'block';
   sheetCanvas.style.display = 'block';
   const layout = computeSheetLayout(n);
   const c = applyCanvasDpr(sheetCanvas, layout.totalW, layout.totalH, {
@@ -75,6 +162,11 @@ function renderSheetPreview() {
     getTuning,
     showFretNumbers: fretNumbersVisible(),
   });
+}
+
+function removeChordFromSheet(id) {
+  cheatItems = cheatItems.filter((item) => item.id !== id);
+  renderSheetPreview();
 }
 
 function enterDraftMode() {
@@ -188,6 +280,7 @@ function downloadPng() {
   drawChordDiagram(oc, positions, L.w, L.h, 1, {
     ...diagramOptionsForEditor(),
     transparentDiagramBackground: false,
+    theme: LIGHT_THEME,
   });
   const a = document.createElement('a');
   a.download = 'chord.png';
@@ -200,6 +293,7 @@ function initialRender() {
 }
 
 function init() {
+  applyTheme(selectedTheme, { persist: false });
   populateStartFretSelect();
 
   tuningInput.value = DEFAULT_TUNING.join(', ');
@@ -218,6 +312,20 @@ function init() {
   });
 
   document.getElementById('pngBtn').addEventListener('click', downloadPng);
+  if (themeToggleBtn) {
+    themeToggleBtn.addEventListener('click', () => {
+      applyTheme(selectedTheme === 'dark' ? 'light' : 'dark');
+      render();
+    });
+  }
+  if (systemThemeQuery && typeof systemThemeQuery.addEventListener === 'function') {
+    systemThemeQuery.addEventListener('change', (event) => {
+      const saved = window.localStorage.getItem(THEME_STORAGE_KEY);
+      if (saved === 'light' || saved === 'dark') return;
+      applyTheme(event.matches ? 'dark' : 'light', { persist: false });
+      render();
+    });
+  }
   window.addEventListener('resize', render);
 
   if (document.fonts && document.fonts.ready) {

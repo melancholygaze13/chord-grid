@@ -11,8 +11,22 @@
 </head>
 <body>
   <header class="page-header">
-    <span class="eyebrow">Guitar chord sheet generator</span>
-    <h1 id="pageTitle">ChordGrid</h1>
+    <div class="header-bar">
+      <div>
+        <span class="eyebrow">Guitar chord sheet generator</span>
+        <h1 id="pageTitle">ChordGrid</h1>
+      </div>
+      <button
+        type="button"
+        id="themeToggle"
+        class="theme-toggle secondary"
+        aria-label="Switch to dark theme"
+        aria-pressed="false"
+      >
+        <span class="theme-toggle__icon" aria-hidden="true">☾</span>
+        <span class="theme-toggle__label">Dark mode</span>
+      </button>
+    </div>
     <p class="lead">
       Add a <strong>sheet title</strong>, place each chord on the fretboard, then click <strong>Add to sheet</strong> to build your page. Open <strong>Preview</strong> to see the full layout, and download a PNG when you are ready.
     </p>
@@ -93,10 +107,39 @@
   <details class="sheet-preview-details">
     <summary>Preview</summary>
     <div class="sheet-inner">
+      <div class="sheet-empty-state" id="sheetEmptyState" aria-live="polite">
+        <div class="sheet-empty-state__art" aria-hidden="true">
+          <div class="sheet-empty-state__page">
+            <span class="sheet-empty-state__line sheet-empty-state__line--title"></span>
+            <span class="sheet-empty-state__line"></span>
+            <span class="sheet-empty-state__line sheet-empty-state__line--short"></span>
+            <div class="sheet-empty-state__diagrams">
+              <span class="sheet-empty-state__diagram"></span>
+              <span class="sheet-empty-state__diagram"></span>
+              <span class="sheet-empty-state__diagram"></span>
+            </div>
+          </div>
+        </div>
+        <div class="sheet-empty-state__copy">
+          <p class="sheet-empty-state__eyebrow">Preview waiting</p>
+          <h2 class="sheet-empty-state__title">Your chord sheet will appear here</h2>
+          <p class="sheet-empty-state__text">
+            Add a chord from the editor to build the printable layout. PNG export uses the full sheet when it has chords; otherwise it exports only the single editor diagram.
+          </p>
+        </div>
+      </div>
+      <div class="sheet-library" id="sheetLibrary" aria-live="polite">
+        <div class="sheet-library__header">
+          <div>
+            <p class="sheet-library__eyebrow">Added chords</p>
+            <p class="sheet-library__title" id="sheetLibraryTitle">0 chords in sheet</p>
+          </div>
+        </div>
+        <div class="sheet-library__list" id="sheetLibraryList"></div>
+      </div>
       <div class="sheet-scroll" id="sheetScroll">
         <canvas id="sheetCanvas" width="1120" height="400"></canvas>
       </div>
-      <p class="hint" id="sheetEmptyHint" style="margin-top:0.75rem;margin-bottom:0;">PNG export uses the full sheet when it has chords; otherwise it exports only the single editor diagram.</p>
     </div>
   </details>
 
