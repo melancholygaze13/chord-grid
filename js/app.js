@@ -1,4 +1,4 @@
-import { DARK_THEME, DEFAULT_TUNING, L, LIGHT_THEME } from './constants.js';
+import { DARK_THEME, DEFAULT_TUNING, FONT_UI, L, LIGHT_THEME } from './constants.js';
 import { applyCanvasDpr } from './canvas-utils.js';
 import { drawCheatSheetComposite } from './cheat-sheet.js';
 import { drawChordDiagram } from './diagram.js';
@@ -29,6 +29,7 @@ const sheetLibraryList = document.getElementById('sheetLibraryList');
 const sheetLibraryTitle = document.getElementById('sheetLibraryTitle');
 const themeToggleBtn = document.getElementById('themeToggle');
 const systemThemeQuery = window.matchMedia('(prefers-color-scheme: dark)');
+const EXPORT_WATERMARK = 'Made with ChordGrid';
 
 let selectedTheme = loadPreferredTheme();
 
@@ -248,44 +249,158 @@ function render() {
   renderSheetPreview();
 }
 
-function downloadPng() {
+function downloadBlob(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.download = filename;
+  a.href = url;
+  a.click();
+  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function dataUrlToUint8Array(dataUrl) {
+  const base64 = dataUrl.split(',')[1] || '';
+  const binary = window.atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return bytes;
+}
+
+function buildSinglePagePdf(jpegBytes, pageWidth, pageHeight) {
+  const encoder = new TextEncoder();
+  const chunks = [];
+  let length = 0;
+  const offsets = [0];
+
+  const pushAscii = (text) => {
+    const bytes = encoder.encode(text);
+    chunks.push(bytes);
+    length += bytes.length;
+  };
+
+  const pushBinary = (bytes) => {
+    chunks.push(bytes);
+    length += bytes.length;
+  };
+
+  const addObject = (body, binaryBytes, streamTail = '') => {
+    offsets.push(length);
+    pushAscii(`${offsets.length - 1} 0 obj\n`);
+    pushAscii(body);
+    if (binaryBytes) pushBinary(binaryBytes);
+    if (streamTail) pushAscii(streamTail);
+    pushAscii(`\nendobj\n`);
+  };
+
+  const imageStreamHeader =
+    `<< /Type /XObject /Subtype /Image /Width ${Math.round(pageWidth)} /Height ${Math.round(pageHeight)} ` +
+    `/ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${jpegBytes.length} >>\nstream\n`;
+  const contentStream = `q\n${pageWidth} 0 0 ${pageHeight} 0 0 cm\n/Im0 Do\nQ`;
+
+  pushAscii('%PDF-1.3\n');
+  addObject('<< /Type /Catalog /Pages 2 0 R >>');
+  addObject('<< /Type /Pages /Kids [3 0 R] /Count 1 >>');
+  addObject(
+    `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${pageWidth} ${pageHeight}] /Resources << /XObject << /Im0 4 0 R >> >> /Contents 5 0 R >>`
+  );
+  addObject(imageStreamHeader, jpegBytes, '\nendstream');
+  addObject(`<< /Length ${contentStream.length} >>\nstream\n${contentStream}\nendstream`);
+
+  const startXref = length;
+  pushAscii(`xref\n0 ${offsets.length}\n`);
+  pushAscii('0000000000 65535 f \n');
+  for (let i = 1; i < offsets.length; i++) {
+    pushAscii(`${String(offsets[i]).padStart(10, '0')} 00000 n \n`);
+  }
+  pushAscii(
+    `trailer\n<< /Size ${offsets.length} /Root 1 0 R >>\nstartxref\n${startXref}\n%%EOF`
+  );
+
+  return new Blob(chunks, { type: 'application/pdf' });
+}
+
+function drawExportWatermark(ctx, width, height) {
+  const paddingX = Math.max(18, Math.round(width * 0.024));
+  const paddingY = Math.max(10, Math.round(height * 0.018));
+  const fontSize = Math.max(10, Math.min(12, Math.round(width * 0.01)));
+
+  ctx.save();
+  ctx.font = `500 ${fontSize}px ${FONT_UI}`;
+  ctx.textAlign = 'right';
+  ctx.textBaseline = 'alphabetic';
+  const x = width - paddingX;
+  const y = height - paddingY;
+  ctx.fillStyle = 'rgba(20, 20, 22, 0.5)';
+  ctx.fillText(EXPORT_WATERMARK, x, y);
+  ctx.restore();
+}
+
+function renderExportCanvas() {
   if (cheatItems.length > 0) {
     const layout = computeSheetLayout(cheatItems.length);
     const exportScale = 2;
+    const footerHeight = Math.max(28, Math.round(layout.totalW * 0.032));
     const off = document.createElement('canvas');
     off.width = Math.round(layout.totalW * exportScale);
-    off.height = Math.round(layout.totalH * exportScale);
+    off.height = Math.round((layout.totalH + footerHeight) * exportScale);
     const oc = off.getContext('2d');
     oc.imageSmoothingEnabled = true;
     oc.imageSmoothingQuality = 'high';
     oc.setTransform(exportScale, 0, 0, exportScale, 0, 0);
+    oc.fillStyle = '#f4f4f6';
+    oc.fillRect(0, 0, layout.totalW, layout.totalH + footerHeight);
     drawCheatSheetComposite(oc, layout.totalW, layout.totalH, layout, cheatItems, sheetTitleInput.value, {
       getTuning,
       showFretNumbers: fretNumbersVisible(),
     });
-    const a = document.createElement('a');
-    a.download = 'chord-sheet.png';
-    a.href = off.toDataURL('image/png');
-    a.click();
-    return;
+    drawExportWatermark(oc, layout.totalW, layout.totalH + footerHeight);
+    return {
+      canvas: off,
+      filenameBase: 'chord-sheet',
+      width: layout.totalW,
+      height: layout.totalH + footerHeight,
+    };
   }
   const exportScale = 3;
+  const footerHeight = Math.max(28, Math.round(L.w * 0.04));
   const off = document.createElement('canvas');
   off.width = Math.round(L.w * exportScale);
-  off.height = Math.round(L.h * exportScale);
+  off.height = Math.round((L.h + footerHeight) * exportScale);
   const oc = off.getContext('2d');
   oc.imageSmoothingEnabled = true;
   oc.imageSmoothingQuality = 'high';
   oc.setTransform(exportScale, 0, 0, exportScale, 0, 0);
+  oc.fillStyle = '#f4f4f6';
+  oc.fillRect(0, 0, L.w, L.h + footerHeight);
   drawChordDiagram(oc, positions, L.w, L.h, 1, {
     ...diagramOptionsForEditor(),
     transparentDiagramBackground: false,
     theme: LIGHT_THEME,
   });
+  drawExportWatermark(oc, L.w, L.h + footerHeight);
+  return {
+    canvas: off,
+    filenameBase: 'chord',
+    width: L.w,
+    height: L.h + footerHeight,
+  };
+}
+
+function downloadPng() {
+  const exportAsset = renderExportCanvas();
   const a = document.createElement('a');
-  a.download = 'chord.png';
-  a.href = off.toDataURL('image/png');
+  a.download = `${exportAsset.filenameBase}.png`;
+  a.href = exportAsset.canvas.toDataURL('image/png');
   a.click();
+}
+
+function downloadPdf() {
+  const exportAsset = renderExportCanvas();
+  const jpegBytes = dataUrlToUint8Array(exportAsset.canvas.toDataURL('image/jpeg', 0.92));
+  const pdfBlob = buildSinglePagePdf(jpegBytes, exportAsset.width, exportAsset.height);
+  downloadBlob(pdfBlob, `${exportAsset.filenameBase}.pdf`);
 }
 
 function initialRender() {
@@ -312,6 +427,7 @@ function init() {
   });
 
   document.getElementById('pngBtn').addEventListener('click', downloadPng);
+  document.getElementById('pdfBtn').addEventListener('click', downloadPdf);
   if (themeToggleBtn) {
     themeToggleBtn.addEventListener('click', () => {
       applyTheme(selectedTheme === 'dark' ? 'light' : 'dark');
