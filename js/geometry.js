@@ -22,9 +22,10 @@ export function computeChordLayout(positions, w, h, scale = 1, layoutOpts = {}) 
   const maxF = fretsPlayed.length ? Math.max(...fretsPlayed) : baseFret + 3;
   const numFretRows = Math.min(5, Math.max(4, maxF - baseFret + 1));
 
+  const stringCount = Math.max(2, positions.length);
   const stringXs = [];
-  for (let i = 0; i < 6; i++) {
-    stringXs.push(round2(padL + (innerW * i) / 5));
+  for (let i = 0; i < stringCount; i++) {
+    stringXs.push(round2(padL + (innerW * i) / (stringCount - 1)));
   }
 
   const fretGap = innerH / numFretRows;
@@ -62,7 +63,7 @@ export function stringIndexFromX(x, lay) {
   const xc = Math.max(left, Math.min(right, x));
   let best = 0;
   let bestD = Infinity;
-  for (let i = 0; i < 6; i++) {
+  for (let i = 0; i < lay.stringXs.length; i++) {
     const d = Math.abs(xc - lay.stringXs[i]);
     if (d < bestD) {
       bestD = d;

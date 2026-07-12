@@ -6,16 +6,19 @@
   <title>ChordGrid</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/app.css" />
 </head>
 <body>
-  <header class="page-header">
-    <div class="header-bar">
-      <div>
-        <span class="eyebrow">Guitar chord sheet generator</span>
-        <h1 id="pageTitle">ChordGrid</h1>
-      </div>
+  <nav class="site-nav" aria-label="Primary navigation">
+    <a class="site-nav__brand" href="#top" aria-label="ChordGrid home">
+      <span class="site-nav__mark" aria-hidden="true"></span>
+      <span>ChordGrid</span>
+    </a>
+    <div class="site-nav__actions">
+      <a href="#editorPanel">Editor</a>
+      <a href="#preview">Preview</a>
+      <a href="https://github.com/melancholygaze13/chord-grid" target="_blank" rel="noreferrer">GitHub</a>
       <button
         type="button"
         id="themeToggle"
@@ -23,91 +26,102 @@
         aria-label="Switch to dark theme"
         aria-pressed="false"
       >
-        <span class="theme-toggle__icon" aria-hidden="true">☾</span>
+        <span class="theme-toggle__icon" aria-hidden="true"></span>
         <span class="theme-toggle__label">Dark mode</span>
       </button>
     </div>
-    <p class="lead">
-      Add a <strong>sheet title</strong>, place each chord on the fretboard, then click <strong>Add to sheet</strong> to build your page. Open <strong>Preview</strong> to see the full layout, and download a PNG when you are ready.
-    </p>
-    <div class="header-sheet">
-      <label for="sheetTitle">Sheet title</label>
-      <div class="tuning-row">
-        <input
-          type="text"
-          id="sheetTitle"
-          spellcheck="false"
-          placeholder="e.g. Open chords in G"
-          autocomplete="off"
-        />
-      </div>
-    </div>
-  </header>
+  </nav>
 
-  <div class="canvas-wrap editor-panel">
-    <p class="editor-heading">Editor</p>
-    <div class="editor-fields">
-      <div class="editor-fields__row">
-        <div class="field-group">
-          <label for="chordTitle">Chord name</label>
-          <input type="text" id="chordTitle" spellcheck="false" placeholder="e.g. Am, Cmaj7" autocomplete="off" />
+  <main id="top">
+    <header class="page-header">
+      <p class="eyebrow">Guitar and bass chord sheet studio</p>
+      <h1 id="pageTitle">Shape chords. Build sheets.</h1>
+      <p class="lead">
+        Draw clear chord diagrams, arrange them into a printable collection, and export the result without leaving your browser.
+      </p>
+    </header>
+
+    <section class="workspace-section" id="workspace">
+      <div class="canvas-wrap editor-panel" id="editorPanel">
+        <div class="editor-heading-row">
+          <p class="editor-heading">Chord editor</p>
+          <p class="editor-status"><span></span> Live canvas</p>
         </div>
-        <div class="field-group">
-          <label for="tuning">Tuning</label>
-          <input type="text" id="tuning" spellcheck="false" autocomplete="off" placeholder="E, A, D, G, B, E" />
+        <div class="editor-fields">
+          <div class="field-group field-group--sheet">
+            <label for="sheetTitle">Sheet title</label>
+            <input type="text" id="sheetTitle" spellcheck="false" placeholder="e.g. Open chords in G" autocomplete="off" />
+          </div>
+          <div class="editor-fields__row">
+            <div class="field-group">
+              <label for="instrument">Instrument</label>
+              <select id="instrument">
+                <option value="guitar">Guitar (6 strings)</option>
+                <option value="bass">Bass guitar (4 strings)</option>
+              </select>
+            </div>
+            <div class="field-group">
+              <label for="chordTitle">Chord name</label>
+              <input type="text" id="chordTitle" spellcheck="false" placeholder="e.g. Am, Cmaj7" autocomplete="off" />
+            </div>
+            <div class="field-group">
+              <label for="tuning">Tuning</label>
+              <input type="text" id="tuning" spellcheck="false" autocomplete="off" placeholder="E, A, D, G, B, E" />
+            </div>
+            <div class="field-group">
+              <label for="startFret" title="Top row of the diagram matches this fret">Start fret</label>
+              <select id="startFret" class="start-fret-select" aria-describedby="startFretHelp"></select>
+            </div>
+          </div>
+          <div class="editor-options-row">
+            <p class="hint" id="startFretHelp">The top row begins at the selected fret.</p>
+            <div class="checkbox-row">
+              <input type="checkbox" id="showFretNumbers" checked />
+              <label for="showFretNumbers">Show fret number</label>
+            </div>
+          </div>
         </div>
-        <div class="field-group">
-          <label for="startFret" title="Top row of the diagram matches this fret">Start fret</label>
-          <select id="startFret" class="start-fret-select" aria-describedby="startFretHelp"></select>
+
+        <div class="editor-fretboard-inner">
+          <canvas id="c" width="440" height="520"></canvas>
+          <aside class="editor-shortcuts" role="region" aria-label="Shortcuts">
+            <p class="editor-shortcuts__label">Fast gestures</p>
+            <ul class="editor-shortcuts__list">
+              <li class="editor-shortcuts__row" tabindex="0">
+                <span class="editor-shortcuts__index">Place</span>
+                <span class="editor-shortcuts__keys"><span class="key key--wide">Click</span></span>
+                <span class="editor-shortcuts__action">Add a fretted note</span>
+              </li>
+              <li class="editor-shortcuts__row" tabindex="0">
+                <span class="editor-shortcuts__index">Open</span>
+                <span class="editor-shortcuts__keys"><span class="key">Shift</span><span class="key-gap">+</span><span class="key key--wide">click</span></span>
+                <span class="editor-shortcuts__action">Mark an open string</span>
+              </li>
+              <li class="editor-shortcuts__row" tabindex="0">
+                <span class="editor-shortcuts__index">Mute</span>
+                <span class="editor-shortcuts__keys"><span class="key">Alt</span><span class="key-gap">+</span><span class="key key--wide">click</span></span>
+                <span class="editor-shortcuts__action">Silence a string</span>
+              </li>
+            </ul>
+          </aside>
+        </div>
+
+        <div class="editor-toolbar">
+          <button type="button" id="addToSheetBtn">Add to sheet</button>
+          <div class="editor-toolbar__exports">
+            <button type="button" id="pngBtn" class="secondary">Export PNG</button>
+            <button type="button" id="pdfBtn" class="secondary">Export PDF</button>
+          </div>
         </div>
       </div>
-      <p class="hint" id="startFretHelp">Top fret row matches this value. With “Show fret number”, only this fret gets a label.</p>
+    </section>
 
-      <div class="checkbox-row" style="margin-top:0.65rem;">
-        <input type="checkbox" id="showFretNumbers" checked />
-        <label for="showFretNumbers">Show fret number on diagram</label>
-      </div>
-    </div>
-
-    <div class="editor-fretboard-inner">
-      <canvas id="c" width="440" height="520"></canvas>
-      <aside class="editor-shortcuts" role="region" aria-label="Shortcuts">
-        <p class="editor-shortcuts__label">Shortcuts</p>
-        <ul class="editor-shortcuts__list">
-          <li class="editor-shortcuts__row">
-            <span class="editor-shortcuts__keys">
-              <span class="key key--wide">Click</span>
-            </span>
-            <span class="editor-shortcuts__action">Fretted note</span>
-          </li>
-          <li class="editor-shortcuts__row">
-            <span class="editor-shortcuts__keys">
-              <span class="key">⇧</span><span class="key-gap">+</span><span class="key key--wide">click</span>
-            </span>
-            <span class="editor-shortcuts__action">Open string</span>
-          </li>
-          <li class="editor-shortcuts__row">
-            <span class="editor-shortcuts__keys">
-              <span class="key">⌥</span><span class="key-gap">/</span><span class="key">Alt</span><span class="key-gap">+</span><span class="key key--wide">tap</span>
-              <span class="editor-shortcuts__or">or</span>
-              <span class="key key--wide">right-click</span>
-            </span>
-            <span class="editor-shortcuts__action">Mute</span>
-          </li>
-        </ul>
-      </aside>
-    </div>
-
-    <div class="editor-toolbar">
-      <button type="button" id="addToSheetBtn">Add to sheet</button>
-      <button type="button" id="pngBtn" class="secondary">Download PNG</button>
-      <button type="button" id="pdfBtn" class="secondary">Download PDF</button>
-    </div>
-  </div>
-
-  <details class="sheet-preview-details">
-    <summary>Preview</summary>
-    <div class="sheet-inner">
+    <details class="sheet-preview-details" id="preview" open>
+      <summary>
+        <span>Sheet preview</span>
+        <span class="summary-action">Expand or collapse</span>
+      </summary>
+      <div class="sheet-inner">
       <div class="sheet-empty-state" id="sheetEmptyState" aria-live="polite">
         <div class="sheet-empty-state__art" aria-hidden="true">
           <div class="sheet-empty-state__page">
@@ -141,17 +155,18 @@
       <div class="sheet-scroll" id="sheetScroll">
         <canvas id="sheetCanvas" width="1120" height="400"></canvas>
       </div>
-    </div>
-  </details>
+      </div>
+    </details>
+  </main>
 
   <footer class="site-footer">
-    <div>
+    <div class="site-footer__bottom">
       <p class="site-footer__brand">ChordGrid by melancholygaze13</p>
-      <p class="site-footer__text">Create printable guitar chord sheets directly in your browser.</p>
+      <nav class="site-footer__nav" aria-label="Footer">
+        <a href="#top">Back to top</a>
+        <a href="https://github.com/melancholygaze13/chord-grid" target="_blank" rel="noreferrer">GitHub</a>
+      </nav>
     </div>
-    <nav class="site-footer__nav" aria-label="Footer">
-      <a href="https://github.com/melancholygaze13/chord-grid" target="_blank" rel="noreferrer">GitHub</a>
-    </nav>
   </footer>
 
   <script type="module" src="js/app.js"></script>

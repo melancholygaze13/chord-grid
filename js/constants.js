@@ -2,9 +2,15 @@
 export const L = Object.freeze({ w: 440, h: 520 });
 
 export const DEFAULT_TUNING = Object.freeze(['E', 'A', 'D', 'G', 'B', 'E']);
+export const BASS_TUNING = Object.freeze(['E', 'A', 'D', 'G']);
+
+export const INSTRUMENTS = Object.freeze({
+  guitar: Object.freeze({ label: 'Guitar', tuning: DEFAULT_TUNING }),
+  bass: Object.freeze({ label: 'Bass guitar', tuning: BASS_TUNING }),
+});
 
 /** Keep in sync with `index.html` font link. */
-export const FONT_UI = '"Outfit", system-ui, sans-serif';
+export const FONT_UI = '"Geist", system-ui, sans-serif';
 
 export const LIGHT_THEME = Object.freeze({
   paper: '#fbfbfc',

@@ -1,6 +1,6 @@
 # ChordGrid
 
-A small browser tool for **drawing guitar chord diagrams** and **laying them out on a printable sheet**. You set a sheet title, configure tuning and starting fret, click the fretboard to place notes (with support for open strings and mutes), add each chord to the sheet, manage the sheet from the preview panel, and export the result as **PNG** or **PDF**.
+A small browser tool for **drawing guitar and bass chord diagrams** and **laying them out on a printable sheet**. You set a sheet title, choose an instrument, configure tuning and starting fret, click the fretboard to place notes (with support for open strings and mutes), add each chord to the sheet, manage the sheet from the preview panel, and export the result as **PNG** or **PDF**.
 
 The UI is a static site: no build step and no framework, just ES modules and the Canvas API.
 
@@ -10,7 +10,8 @@ The UI is a static site: no build step and no framework, just ES modules and the
 
 ## Features
 
-- Interactive guitar chord diagram editor
+- Interactive guitar and 4-string bass chord diagram editor
+- Guitar (E–A–D–G–B–E) and bass (E–A–D–G) presets
 - Custom chord names, sheet titles, tuning, and starting fret
 - Open string and muted string support
 - Optional fret number labels
@@ -45,7 +46,7 @@ The UI is a static site: no build step and no framework, just ES modules and the
 
 - **Canvas 2D API** - chord diagrams, grid, labels, and sheet composite rendering
 - **ES modules** (`import` / `export`) - code split across `js/` files (requires serving over `http://`, not `file://`)
-- **Google Fonts** - [Outfit](https://fonts.google.com/specimen/Outfit) (UI) and [JetBrains Mono](https://fonts.google.com/specimen/JetBrains+Mono) (diagram text)
+- **Google Fonts** - [Geist](https://fonts.google.com/specimen/Geist) (UI) and [JetBrains Mono](https://fonts.google.com/specimen/JetBrains+Mono) (diagram text)
 - **npm + [serve](https://github.com/vercel/serve)** - local static file server for development (optional but convenient)
 
 ## Run locally

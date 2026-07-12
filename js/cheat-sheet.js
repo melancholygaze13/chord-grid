@@ -2,7 +2,6 @@ import { FONT_UI } from './constants.js';
 import { drawChordDiagram } from './diagram.js';
 
 export function drawCheatSheetComposite(ctx, w, h, layout, cheatItems, sheetTitle, view) {
-  const tuning = view.getTuning();
   const showFret = view.showFretNumbers;
 
   ctx.save();
@@ -37,7 +36,7 @@ export function drawCheatSheetComposite(ctx, w, h, layout, cheatItems, sheetTitl
 
     ctx.translate(x, y + nameBand);
     drawChordDiagram(ctx, it.positions, cellW, diagramH, diagramScale, {
-      tuning,
+      tuning: it.tuning || view.getTuning(),
       showFretNumbers: showFret,
       startFret: it.startFret,
     });

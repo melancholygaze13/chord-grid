@@ -12,8 +12,11 @@ import { computeChordLayout, round2 } from './geometry.js';
 export function drawChordDiagram(c, positions, w, h, scale = 1, opts) {
   const t = opts.theme || LIGHT_THEME;
   const showNums = !!opts.showFretNumbers;
+  const stringCount = Math.max(2, positions.length);
   const tuning =
-    opts.tuning && opts.tuning.length === 6 ? opts.tuning : [...DEFAULT_TUNING];
+    opts.tuning && opts.tuning.length === stringCount
+      ? opts.tuning
+      : DEFAULT_TUNING.slice(0, stringCount);
   const startFret =
     typeof opts.startFret === 'number' && Number.isFinite(opts.startFret)
       ? Math.min(24, Math.max(1, Math.round(opts.startFret)))
@@ -81,7 +84,7 @@ export function drawChordDiagram(c, positions, w, h, scale = 1, opts) {
     c.fillText('fr', padL - 12 * scale, boardTop + fretGap * 0.5 + 12 * scale);
   }
 
-  const stringVisual = [
+  const guitarStringVisual = [
     { w: 3.25, hi: '#e4e2df', mid: '#6e6a66', lo: '#2f2c29' },
     { w: 2.6, hi: '#e8e6e4', mid: '#86827e', lo: '#45423f' },
     { w: 2.05, hi: '#eceae8', mid: '#9e9a96', lo: '#5a5754' },
@@ -89,8 +92,15 @@ export function drawChordDiagram(c, positions, w, h, scale = 1, opts) {
     { w: 1.12, hi: '#f2f1f0', mid: '#c0bdba', lo: '#95928f' },
     { w: 0.8, hi: '#f5f4f3', mid: '#d0cecc', lo: '#b0aeac' },
   ];
+  const bassStringVisual = [
+    { w: 3.8, hi: '#e4e2df', mid: '#625e5a', lo: '#292623' },
+    { w: 3.15, hi: '#e8e6e4', mid: '#77736f', lo: '#393633' },
+    { w: 2.5, hi: '#eceae8', mid: '#8d8985', lo: '#4d4a47' },
+    { w: 1.9, hi: '#efeeed', mid: '#a29e9a', lo: '#65625f' },
+  ];
+  const stringVisual = stringCount === 4 ? bassStringVisual : guitarStringVisual;
   c.lineCap = 'butt';
-  for (let s = 0; s < 6; s++) {
+  for (let s = 0; s < stringCount; s++) {
     const x = stringXs[s];
     const sv = stringVisual[s];
     const lw = sv.w * scale;
@@ -109,7 +119,7 @@ export function drawChordDiagram(c, positions, w, h, scale = 1, opts) {
   c.fillStyle = t.nut;
   c.fillRect(padL - 0.5 * scale, boardTop - nutH, innerW + 1 * scale, nutH);
 
-  const stringGap = innerW / 5;
+  const stringGap = innerW / (stringCount - 1);
   const openRingR = Math.min(7.4 * scale, fretGap * 0.29, stringGap * 0.31);
   const muteFontPx = Math.min(16 * scale, fretGap * 0.5, stringGap * 0.52);
   const openStrokeW = Math.min(2 * scale, openRingR * 0.24);
@@ -117,7 +127,7 @@ export function drawChordDiagram(c, positions, w, h, scale = 1, opts) {
   c.textAlign = 'center';
   c.textBaseline = 'middle';
 
-  for (let s = 0; s < 6; s++) {
+  for (let s = 0; s < stringCount; s++) {
     const x = stringXs[s];
     const fr = positions[s];
     if (fr === -1) {
@@ -140,9 +150,9 @@ export function drawChordDiagram(c, positions, w, h, scale = 1, opts) {
   });
 
   const barres = [];
-  const usedBarre = new Array(6).fill(false);
+  const usedBarre = new Array(stringCount).fill(false);
 
-  for (let s = 0; s < 6; ) {
+  for (let s = 0; s < stringCount; ) {
     const f = positions[s];
     if (f <= 0) {
       s++;
@@ -155,7 +165,7 @@ export function drawChordDiagram(c, positions, w, h, scale = 1, opts) {
     }
     let e = s;
     while (
-      e + 1 < 6 &&
+      e + 1 < stringCount &&
       positions[e + 1] === f &&
       positions[e + 1] - baseFret >= 0 &&
       positions[e + 1] - baseFret < numFretRows
@@ -186,7 +196,7 @@ export function drawChordDiagram(c, positions, w, h, scale = 1, opts) {
     c.restore();
   }
 
-  for (let s = 0; s < 6; s++) {
+  for (let s = 0; s < stringCount; s++) {
     if (usedBarre[s]) continue;
     const f = positions[s];
     if (f <= 0) continue;
@@ -204,7 +214,7 @@ export function drawChordDiagram(c, positions, w, h, scale = 1, opts) {
   c.textAlign = 'center';
   c.textBaseline = 'alphabetic';
   const labelY = h - 18 * scale;
-  for (let s = 0; s < 6; s++) {
+  for (let s = 0; s < stringCount; s++) {
     c.fillText(tuning[s], stringXs[s], labelY);
   }
 

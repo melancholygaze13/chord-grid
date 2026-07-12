@@ -1,4 +1,4 @@
-import { DARK_THEME, DEFAULT_TUNING, FONT_UI, L, LIGHT_THEME } from './constants.js';
+import { DARK_THEME, FONT_UI, INSTRUMENTS, L, LIGHT_THEME } from './constants.js';
 import { applyCanvasDpr } from './canvas-utils.js';
 import { drawCheatSheetComposite } from './cheat-sheet.js';
 import { drawChordDiagram } from './diagram.js';
@@ -10,14 +10,15 @@ import { normalizedTuningOrDefault } from './tuning.js';
 installRoundRectPolyfill();
 
 /** Per-string frets: index 0 = low E; -1 mute, 0 open, >0 fret number. */
-let positions = [0, 0, 0, 0, 0, 0];
+let positions = new Array(INSTRUMENTS.guitar.tuning.length).fill(0);
 
-/** @type {{ id: number; name: string; positions: number[]; startFret: number }[]} */
+/** @type {{ id: number; name: string; positions: number[]; tuning: string[]; instrument: string; startFret: number }[]} */
 let cheatItems = [];
 let nextCheatId = 1;
 const THEME_STORAGE_KEY = 'chord-grid-theme';
 
 const tuningInput = document.getElementById('tuning');
+const instrumentSelect = document.getElementById('instrument');
 const startFretSelect = document.getElementById('startFret');
 const showFretNumbersEl = document.getElementById('showFretNumbers');
 const canvas = document.getElementById('c');
@@ -62,7 +63,7 @@ function updateThemeToggleLabel() {
   );
   const icon = themeToggleBtn.querySelector('.theme-toggle__icon');
   if (icon) {
-    icon.textContent = darkActive ? '☀' : '☾';
+    icon.textContent = '';
   }
   const label = themeToggleBtn.querySelector('.theme-toggle__label');
   if (label) {
@@ -71,7 +72,19 @@ function updateThemeToggleLabel() {
 }
 
 function getTuning() {
-  return normalizedTuningOrDefault(tuningInput.value);
+  return normalizedTuningOrDefault(tuningInput.value, getInstrument().tuning);
+}
+
+function getInstrument() {
+  return INSTRUMENTS[instrumentSelect.value] || INSTRUMENTS.guitar;
+}
+
+function selectInstrument(instrumentKey) {
+  const instrument = INSTRUMENTS[instrumentKey] || INSTRUMENTS.guitar;
+  instrumentSelect.value = instrumentKey in INSTRUMENTS ? instrumentKey : 'guitar';
+  positions = new Array(instrument.tuning.length).fill(0);
+  tuningInput.value = instrument.tuning.join(', ');
+  tuningInput.placeholder = instrument.tuning.join(', ');
 }
 
 function fretNumbersVisible() {
@@ -125,7 +138,8 @@ function renderSheetLibrary() {
 
     const detail = document.createElement('span');
     detail.className = 'sheet-library__detail';
-    detail.textContent = `Start fret ${item.startFret}`;
+    const instrumentLabel = INSTRUMENTS[item.instrument]?.label || 'Guitar';
+    detail.textContent = `${instrumentLabel} · Start fret ${item.startFret}`;
 
     const removeBtn = document.createElement('button');
     removeBtn.type = 'button';
@@ -171,7 +185,7 @@ function removeChordFromSheet(id) {
 }
 
 function enterDraftMode() {
-  positions = [0, 0, 0, 0, 0, 0];
+  positions = new Array(getInstrument().tuning.length).fill(0);
   if (chordTitleInput) chordTitleInput.value = '';
   render();
 }
@@ -183,6 +197,8 @@ function addChordToSheet(copyPositions) {
     id: nextCheatId++,
     name: nm,
     positions: copyPositions,
+    tuning: getTuning(),
+    instrument: instrumentSelect.value,
     startFret: getStartFret(),
   });
   renderSheetPreview();
@@ -411,10 +427,14 @@ function init() {
   applyTheme(selectedTheme, { persist: false });
   populateStartFretSelect();
 
-  tuningInput.value = DEFAULT_TUNING.join(', ');
+  selectInstrument('guitar');
   if (chordTitleInput) chordTitleInput.disabled = false;
 
   tuningInput.addEventListener('input', render);
+  instrumentSelect.addEventListener('change', () => {
+    selectInstrument(instrumentSelect.value);
+    render();
+  });
   startFretSelect.addEventListener('change', render);
   showFretNumbersEl.addEventListener('change', render);
   sheetTitleInput.addEventListener('input', renderSheetPreview);
