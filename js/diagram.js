@@ -84,37 +84,31 @@ export function drawChordDiagram(c, positions, w, h, scale = 1, opts) {
     c.fillText('fr', padL - 12 * scale, boardTop + fretGap * 0.5 + 12 * scale);
   }
 
-  const guitarStringVisual = [
-    { w: 3.25, hi: '#e4e2df', mid: '#6e6a66', lo: '#2f2c29' },
-    { w: 2.6, hi: '#e8e6e4', mid: '#86827e', lo: '#45423f' },
-    { w: 2.05, hi: '#eceae8', mid: '#9e9a96', lo: '#5a5754' },
-    { w: 1.55, hi: '#efeeed', mid: '#b0aca8', lo: '#767370' },
-    { w: 1.12, hi: '#f2f1f0', mid: '#c0bdba', lo: '#95928f' },
-    { w: 0.8, hi: '#f5f4f3', mid: '#d0cecc', lo: '#b0aeac' },
+  const guitarStringWidths = [3.25, 2.6, 2.05, 1.55, 1.12, 0.8];
+  const bassStringWidths = [3.8, 3.15, 2.5, 1.9];
+  const stringWidths = stringCount === 4 ? bassStringWidths : guitarStringWidths;
+  const stringPaints = [
+    { color: t.stringLow, alpha: 1 },
+    { color: t.stringLow, alpha: 0.88 },
+    { color: t.stringLow, alpha: 0.74 },
+    { color: t.stringHigh, alpha: 0.9 },
+    { color: t.stringHigh, alpha: 0.78 },
+    { color: t.stringHigh, alpha: 1 },
   ];
-  const bassStringVisual = [
-    { w: 3.8, hi: '#e4e2df', mid: '#625e5a', lo: '#292623' },
-    { w: 3.15, hi: '#e8e6e4', mid: '#77736f', lo: '#393633' },
-    { w: 2.5, hi: '#eceae8', mid: '#8d8985', lo: '#4d4a47' },
-    { w: 1.9, hi: '#efeeed', mid: '#a29e9a', lo: '#65625f' },
-  ];
-  const stringVisual = stringCount === 4 ? bassStringVisual : guitarStringVisual;
   c.lineCap = 'butt';
   for (let s = 0; s < stringCount; s++) {
     const x = stringXs[s];
-    const sv = stringVisual[s];
-    const lw = sv.w * scale;
-    const grad = c.createLinearGradient(x, boardTop, x, boardBottom);
-    grad.addColorStop(0, sv.hi);
-    grad.addColorStop(0.42, sv.mid);
-    grad.addColorStop(1, sv.lo);
-    c.strokeStyle = grad;
-    c.lineWidth = lw;
+    const colorIndex = Math.round((s / Math.max(1, stringCount - 1)) * (stringPaints.length - 1));
+    const paint = stringPaints[colorIndex];
+    c.strokeStyle = paint.color;
+    c.globalAlpha = paint.alpha;
+    c.lineWidth = stringWidths[s] * scale;
     c.beginPath();
     c.moveTo(x, boardTop);
     c.lineTo(x, boardBottom);
     c.stroke();
   }
+  c.globalAlpha = 1;
 
   c.fillStyle = t.nut;
   c.fillRect(padL - 0.5 * scale, boardTop - nutH, innerW + 1 * scale, nutH);

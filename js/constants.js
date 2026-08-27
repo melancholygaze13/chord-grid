@@ -20,14 +20,18 @@ export const LIGHT_THEME = Object.freeze({
   openRing: '#3f3f46',
   dotDark: '#18181b',
   labelMuted: '#71717a',
+  stringLow: '#4f4d4a',
+  stringHigh: '#bdbab5',
 });
 
 export const DARK_THEME = Object.freeze({
-  paper: '#141922',
-  nut: '#edf2fc',
-  fretWire: '#4d5768',
-  muted: '#d5dae4',
-  openRing: '#f3f7ff',
-  dotDark: '#f1f5fb',
-  labelMuted: '#b3bac8',
+  paper: '#212630',
+  nut: '#dbe6f5',
+  fretWire: '#758094',
+  muted: '#d1d9e8',
+  openRing: '#ccd9e8',
+  dotDark: '#edf5fc',
+  labelMuted: '#a8b5c9',
+  stringLow: '#c7ccd6',
+  stringHigh: '#99a1b0',
 });
